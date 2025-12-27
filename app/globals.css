@@ -1,26 +1,69 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: #0f172a;
+  /* Slate 900 - Professional Dark Blue/Grey */
+  --color-foreground: #f8fafc;
+  /* Slate 50 */
+
+  /* Medical Grade Colors */
+  --color-medical-blue: #0ea5e9;
+  /* Sky 500 - Trustworthy, clean blue */
+  --color-medical-green: #10b981;
+  /* Emerald 500 - Safety */
+  --color-alert-red: #ef4444;
+  /* Red 500 - Standard Alert */
+  --color-warning-purple: #a855f7;
+  /* Purple 500 - Warning (Requested Replacement) */
+
+  /* Retain variable names for backward compatibility but map to new colors */
+  --color-neon-blue: var(--color-medical-blue);
+  --color-neon-purple: var(--color-warning-purple);
+  /* Mapping Purple to Purple for Warning */
+  --color-neon-pink: var(--color-alert-red);
+  /* Mapping Pink to Red for Danger */
+
+  --color-glass: rgba(15, 23, 42, 0.6);
+  --color-glass-strong: rgba(30, 41, 59, 0.8);
+  --color-glass-border: rgba(148, 163, 184, 0.1);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer utilities {
+  .glass-panel {
+    background-color: var(--color-glass);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--color-glass-border);
+  }
+
+  .glass-panel-strong {
+    background-color: var(--color-glass-strong);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--color-glass-border);
+  }
+
+  /* Muted Glow Effects */
+  .text-glow-blue {
+    text-shadow: 0 0 10px rgba(14, 165, 233, 0.3);
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans);
+  /* Subtle, professional gradient */
+  background-image:
+    radial-gradient(circle at 50% -20%, rgba(14, 165, 233, 0.1) 0%, transparent 40%),
+    radial-gradient(circle at 100% 40%, rgba(15, 23, 42, 1) 0%, transparent 40%);
+  background-attachment: fixed;
+  min-height: 100vh;
 }
