@@ -8,10 +8,10 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center overflow-hidden">
+    <main className="flex min-h-screen flex-col items-center">
       {/* Hero Section */}
-      <section className="relative w-full flex flex-col items-center justify-center min-h-screen px-4 text-center">
-        <div className="absolute inset-0 z-0">
+      <section className="relative w-full flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 text-center">
+        <div className="absolute inset-0 z-0 overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-neon-blue/20 blur-[120px] rounded-full animate-pulse-slow" />
         </div>
 
@@ -42,9 +42,11 @@ export default function Home() {
                 <Scan className="w-5 h-5" /> Start Scanning
               </Button>
             </Link>
-            <Button variant="ghost" size="lg" className="gap-2">
-              How it works <ArrowRight className="w-5 h-5" />
-            </Button>
+            <Link href="/how-it-works">
+              <Button variant="ghost" size="lg" className="gap-2">
+                How it works <ArrowRight className="w-5 h-5" />
+              </Button>
+            </Link>
           </div>
         </motion.div>
       </section>

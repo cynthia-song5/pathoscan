@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,7 +35,7 @@ export default function RootLayout({
           <div className="relative min-h-screen flex flex-col">
             {/* Global Header */}
             <header className="fixed top-0 left-0 right-0 z-50 px-6 py-4 glass-panel border-b border-white/5 flex items-center justify-between backdrop-blur-xl bg-slate-900/80">
-              <div className="flex items-center gap-3">
+              <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                 <div className="w-8 h-8 rounded-lg bg-medical-blue flex items-center justify-center shadow-lg shadow-medical-blue/20">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -51,7 +52,7 @@ export default function RootLayout({
                   </svg>
                 </div>
                 <span className="text-xl font-bold tracking-tight text-white">PathoScan</span>
-              </div>
+              </Link>
               <UserNav />
             </header>
 

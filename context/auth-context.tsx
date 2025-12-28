@@ -6,11 +6,13 @@ import { useRouter } from "next/navigation";
 interface User {
     email: string;
     name: string;
+    password?: string;
 }
 
 interface AuthContextType {
     user: User | null;
-    login: (email: string) => void;
+    login: (email: string, password?: string) => { success: boolean, message?: string };
+    signup: (email: string, name: string, password?: string) => { success: boolean, message?: string };
     logout: () => void;
     isAuthenticated: boolean;
 }
@@ -23,26 +25,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         // Check local storage on load
-        const storedUser = localStorage.getItem("pathoscan_user");
+        const storedUser = localStorage.getItem("pathoscan_active_user");
         if (storedUser) {
             setUser(JSON.parse(storedUser));
         }
     }, []);
 
-    const login = (email: string) => {
-        const newUser = { email, name: email.split("@")[0] };
+    const getUsers = (): User[] => {
+        const stored = localStorage.getItem("pathoscan_users_db");
+        return stored ? JSON.parse(stored) : [];
+    };
+
+    const login = (email: string, password?: string) => {
+        const users = getUsers();
+        const foundUser = users.find(u => u.email === email && (!password || u.password === password));
+
+        if (foundUser) {
+            setUser(foundUser);
+            localStorage.setItem("pathoscan_active_user", JSON.stringify(foundUser));
+            return { success: true };
+        }
+        return { success: false, message: "Invalid email or password" };
+    };
+
+    const signup = (email: string, name: string, password?: string) => {
+        const users = getUsers();
+        if (users.find(u => u.email === email)) {
+            return { success: false, message: "User already exists" };
+        }
+
+        const newUser = { email, name, password };
+        const updatedUsers = [...users, newUser];
+        localStorage.setItem("pathoscan_users_db", JSON.stringify(updatedUsers));
+
+        // Auto login
         setUser(newUser);
-        localStorage.setItem("pathoscan_user", JSON.stringify(newUser));
+        localStorage.setItem("pathoscan_active_user", JSON.stringify(newUser));
+        return { success: true };
     };
 
     const logout = () => {
         setUser(null);
-        localStorage.removeItem("pathoscan_user");
+        localStorage.removeItem("pathoscan_active_user");
         router.push("/");
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
+        <AuthContext.Provider value={{ user, login, signup, logout, isAuthenticated: !!user }}>
             {children}
         </AuthContext.Provider>
     );

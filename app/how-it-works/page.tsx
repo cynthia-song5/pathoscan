@@ -2,89 +2,103 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ScanLine, Smartphone, Activity, CheckCircle } from "lucide-react";
+import { ArrowLeft, Scan, Cpu, BarChart3, ShieldCheck, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-const steps = [
-    {
-        title: "1. Get Your PathoStrip",
-        description: "Our specialized strips contain bio-reactive agents that change color in the presence of harmful microbial growth.",
-        icon: <ScanLine className="w-8 h-8 text-medical-blue" />,
-        color: "bg-medical-blue/10",
-        border: "border-medical-blue/20"
-    },
-    {
-        title: "2. Scan with App",
-        description: "Use the PathoScan camera to capture the strip. Our 'Smart Capture' system uses the Reference Card to calibrate specifically for your lighting.",
-        icon: <Smartphone className="w-8 h-8 text-warning-purple" />,
-        color: "bg-warning-purple/10",
-        border: "border-warning-purple/20"
-    },
-    {
-        title: "3. AI Color Analysis",
-        description: "We analyze the strip's color delta in the LAB color space to detect microscopic shifts invisible to the naked eye.",
-        icon: <Activity className="w-8 h-8 text-alert-red" />,
-        color: "bg-alert-red/10",
-        border: "border-alert-red/20"
-    },
-    {
-        title: "4. Actionable Results",
-        description: "Receive an instant risk score and specific recommendations to secure your environment.",
-        icon: <CheckCircle className="w-8 h-8 text-medical-green" />,
-        color: "bg-medical-green/10",
-        border: "border-medical-green/20"
-    }
-];
+export default function HowItWorks() {
+    const steps = [
+        {
+            icon: Scan,
+            title: "1. Capture",
+            description: "Place your PathoStrip in an area of concern. After 24 hours, use the app to take a high-resolution photo of the strip.",
+            color: "neon-blue"
+        },
+        {
+            icon: Cpu,
+            title: "2. Analyze",
+            description: "Our proprietary Computer Vision pipeline extracts the color data from your strip, correcting for lighting and perspective.",
+            color: "neon-purple"
+        },
+        {
+            icon: BarChart3,
+            title: "3. Monitor",
+            description: "Track contamination levels over time. Identify trends and get specific recommendations based on localized risk scores.",
+            color: "neon-pink"
+        }
+    ];
 
-export default function HowItWorksPage() {
     return (
-        <main className="min-h-screen p-6 md:p-12 mb-20 max-w-5xl mx-auto">
-            <div className="text-center space-y-6 mb-16">
-                <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                    Precision at your fingertips.
-                </h1>
-                <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                    PathoScan turns your smartphone into a laboratory-grade contamination detector. Here's how the magic happens.
-                </p>
-            </div>
+        <main className="min-h-screen p-4 py-12 bg-gradient-to-b from-black to-gray-950">
+            <div className="max-w-4xl mx-auto space-y-12">
+                <header className="flex items-center justify-between mb-8">
+                    <Link href="/" className="text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+                        <ArrowLeft className="w-5 h-5" /> Back
+                    </Link>
+                    <div className="text-sm font-medium text-neon-blue/80 tracking-widest uppercase italic">The PathoScan System</div>
+                </header>
 
-            <div className="grid md:grid-cols-2 gap-8 relative">
-                {/* Connection Line (Desktop) */}
-                <div className="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-medical-blue/50 via-warning-purple/50 to-alert-red/50 -translate-x-1/2" />
-
-                {steps.map((step, index) => (
-                    <motion.div
-                        key={index}
+                <div className="text-center space-y-4">
+                    <motion.h1
                         initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: index * 0.1 }}
-                        className={`relative ${index % 2 === 0 ? "md:text-right md:items-end" : "md:col-start-2"}`}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-4xl md:text-6xl font-bold text-white tracking-tight"
                     >
-                        {/* Dot on line */}
-                        <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 p-1 bg-black rounded-full border border-white/20 z-10"
-                            style={{ left: index % 2 === 0 ? 'calc(100% + 1rem + 1px)' : 'calc(0% - 1rem - 1px)' }}>
-                            <div className="w-2 h-2 bg-white rounded-full" />
-                        </div>
+                        How <span className="text-neon-blue">PathoScan</span> Works
+                    </motion.h1>
+                    <p className="text-gray-400 text-lg max-w-2xl mx-auto">
+                        Scientific-grade environmental monitoring, simplified for your home.
+                    </p>
+                </div>
 
-                        <Card className={`p-6 hover:bg-white/5 transition-colors border ${step.border}`}>
-                            <div className={`mb-4 inline-flex p-3 rounded-xl ${step.color} ${index % 2 === 0 ? "md:order-last md:ml-auto" : ""}`}>
-                                {step.icon}
-                            </div>
-                            <h3 className="text-xl font-bold text-white mb-2">{step.title}</h3>
-                            <p className="text-gray-400">{step.description}</p>
+                <div className="grid md:grid-cols-3 gap-8 pt-8">
+                    {steps.map((step, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.2 }}
+                        >
+                            <Card className="p-8 h-full bg-black/40 border-white/5 hover:border-white/10 transition-colors relative overflow-hidden group">
+                                <div className={`absolute top-0 right-0 w-24 h-24 bg-${step.color}/5 blur-3xl -mr-12 -mt-12 group-hover:bg-${step.color}/10 transition-colors`} />
+                                <step.icon className={`w-10 h-10 text-${step.color} mb-6`} />
+                                <h3 className="text-xl font-bold text-white mb-4">{step.title}</h3>
+                                <p className="text-gray-400 text-sm leading-relaxed">{step.description}</p>
+                            </Card>
+                        </motion.div>
+                    ))}
+                </div>
+
+                <section className="space-y-8 pt-12">
+                    <div className="flex items-center gap-4">
+                        <div className="h-px flex-1 bg-white/10" />
+                        <h2 className="text-2xl font-bold text-white px-4">Deep Science</h2>
+                        <div className="h-px flex-1 bg-white/10" />
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-8">
+                        <Card className="p-8 bg-black/60 border-white/10">
+                            <h3 className="text-neon-blue font-bold mb-4 uppercase tracking-widest text-xs">Computer Vision</h3>
+                            <p className="text-gray-300 text-sm leading-relaxed">
+                                Our pipeline uses **Perspective Transformation** to flatten the strip image, ensuring accurate measurement regardless of camera angle. We apply **Adaptive White Balance** to normalize for indoor lighting (warm LED vs natural light).
+                            </p>
                         </Card>
-                    </motion.div>
-                ))}
-            </div>
+                        <Card className="p-8 bg-black/60 border-white/10">
+                            <h3 className="text-neon-pink font-bold mb-4 uppercase tracking-widest text-xs">Intelligence Engine</h3>
+                            <p className="text-gray-300 text-sm leading-relaxed">
+                                By quantifying the ratio of microbial markers (safe blue to hazardous pink), we calculate a **Risk Index**. This index is trended over time to predict potential outbreaks before they become visible.
+                            </p>
+                        </Card>
+                    </div>
+                </section>
 
-            <div className="mt-20 text-center">
-                <Link href="/scan">
-                    <Button size="lg" className="bg-medical-blue hover:bg-medical-blue/80 text-white gap-2 text-lg px-8 h-12">
-                        Start Scanning <ArrowRight className="w-5 h-5" />
-                    </Button>
-                </Link>
+                <div className="flex justify-center pt-12">
+                    <Link href="/scan">
+                        <Button size="lg" glow className="px-12 gap-2">
+                            Try It Yourself <ArrowRight className="w-5 h-5" />
+                        </Button>
+                    </Link>
+                </div>
             </div>
         </main>
     );

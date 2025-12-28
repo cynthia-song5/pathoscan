@@ -8,12 +8,13 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
-export default function LoginPage() {
+export default function SignupPage() {
     const [email, setEmail] = useState("");
+    const [name, setName] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
+    const { signup } = useAuth();
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -21,14 +22,14 @@ export default function LoginPage() {
         setError("");
         setLoading(true);
 
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 800));
+        // Simulate network delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
-        const result = login(email, password);
+        const result = signup(email, name, password);
         if (result.success) {
             router.push("/dashboard");
         } else {
-            setError(result.message || "Invalid credentials");
+            setError(result.message || "Failed to create account");
             setLoading(false);
         }
     };
@@ -40,10 +41,10 @@ export default function LoginPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="w-full max-w-md"
             >
-                <Card className="p-8 space-y-8 backdrop-blur-xl bg-slate-900/50 border-white/10 shadow-[0_0_50px_rgba(0,243,255,0.1)]">
+                <Card className="p-8 space-y-8 backdrop-blur-xl bg-slate-900/50 border-white/10 shadow-[0_0_50px_rgba(189,0,255,0.1)]">
                     <div className="text-center space-y-2">
-                        <h1 className="text-3xl font-bold text-white tracking-tight">Security Portal</h1>
-                        <p className="text-gray-400">Authenticate to access environmental trends.</p>
+                        <h1 className="text-3xl font-bold text-white tracking-tight">Create Identity</h1>
+                        <p className="text-gray-400">Join the beta to start environmental monitoring.</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -52,8 +53,24 @@ export default function LoginPage() {
                                 {error}
                             </div>
                         )}
+
                         <div className="space-y-2">
-                            <label htmlFor="email" className="text-sm font-medium text-gray-400 uppercase tracking-widest text-[10px]">
+                            <label htmlFor="name" className="text-[10px] items-center font-medium text-gray-400 uppercase tracking-widest">
+                                Display Name
+                            </label>
+                            <input
+                                id="name"
+                                type="text"
+                                placeholder="John Doe"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-neon-purple/50 transition-all"
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label htmlFor="email" className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">
                                 Email Address
                             </label>
                             <input
@@ -62,13 +79,13 @@ export default function LoginPage() {
                                 placeholder="name@example.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-neon-blue/50 transition-all"
+                                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-neon-purple/50 transition-all"
                                 required
                             />
                         </div>
 
                         <div className="space-y-2">
-                            <label htmlFor="password" className="text-sm font-medium text-gray-400 uppercase tracking-widest text-[10px]">
+                            <label htmlFor="password" className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">
                                 Password
                             </label>
                             <input
@@ -77,48 +94,28 @@ export default function LoginPage() {
                                 placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-neon-blue/50 transition-all"
+                                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-700 focus:outline-none focus:ring-2 focus:ring-neon-purple/50 transition-all"
                                 required
                             />
                         </div>
 
                         <Button
                             type="submit"
-                            className="w-full h-12"
-                            glow
+                            className="w-full h-12 bg-neon-purple hover:bg-neon-purple/80 text-white"
+                            size="lg"
                             disabled={loading}
                         >
-                            {loading ? "Verifying..." : "Authorize Access"}
+                            {loading ? "Registering..." : "Initialize Profile"}
                         </Button>
                     </form>
 
                     <div className="text-center space-y-4">
                         <p className="text-sm text-gray-500">
-                            Don't have an account?{" "}
-                            <Link href="/signup" className="text-neon-blue hover:underline font-medium">
-                                Create Identity
+                            Already part of the network?{" "}
+                            <Link href="/login" className="text-neon-purple hover:underline font-medium">
+                                Sign In
                             </Link>
                         </p>
-
-                        <div className="relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t border-white/5" />
-                            </div>
-                            <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-                                <span className="bg-[#0f172a] px-2 text-gray-600">Secure Protocol</span>
-                            </div>
-                        </div>
-
-                        <Button
-                            variant="ghost"
-                            className="w-full border border-white/5 text-gray-500 hover:text-white"
-                            onClick={() => {
-                                setEmail("test@example.com");
-                                setPassword("testpassword");
-                            }}
-                        >
-                            Load Demo Credentials
-                        </Button>
                     </div>
                 </Card>
             </motion.div>

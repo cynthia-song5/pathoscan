@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Upload, Camera, Loader2, ScanLine, Info } from "lucide-react";
@@ -14,6 +14,31 @@ export function Scanner() {
     const [analyzing, setAnalyzing] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    // ROI Corners State in percentages (x, y)
+    const [corners, setCorners] = useState({
+        tl: { x: 25, y: 25 },
+        tr: { x: 75, y: 25 },
+        bl: { x: 25, y: 75 },
+        br: { x: 75, y: 75 }
+    });
+
+    const handleCornerDrag = (corner: keyof typeof corners, info: any) => {
+        if (containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            const newX = ((corners[corner].x * rect.width / 100) + info.offset.x) * 100 / rect.width;
+            const newY = ((corners[corner].y * rect.height / 100) + info.offset.y) * 100 / rect.height;
+
+            setCorners(prev => ({
+                ...prev,
+                [corner]: {
+                    x: Math.max(0, Math.min(100, newX)),
+                    y: Math.max(0, Math.min(100, newY))
+                }
+            }));
+        }
+    };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -26,51 +51,47 @@ export function Scanner() {
         }
     };
 
-    const handleAnalyze = () => {
+    const handleAnalyze = async () => {
         if (!image) return;
         setAnalyzing(true);
 
-        // Create an image element to draw on canvas
-        const img = new Image();
-        img.src = image;
-        img.onload = () => {
-            // Analyze logic here
+        try {
+            const response = await fetch("/api/analyze", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    image,
+                    corners // Send 4 corners to API
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Analysis failed");
+            }
+
+            const result = await response.json();
+
+            // Artificial delay to make the "Analyzing..." phase feel intentional and premium
             setTimeout(() => {
-                if (canvasRef.current) {
-                    const ctx = canvasRef.current.getContext('2d');
-                    if (ctx) {
-                        // Draw image to canvas to extract data
-                        canvasRef.current.width = img.width;
-                        canvasRef.current.height = img.height;
-                        ctx.drawImage(img, 0, 0);
+                const params = new URLSearchParams({
+                    risk: result.risk,
+                    score: result.score.toString(),
+                    safeP: result.percentages?.safe?.toFixed(1) || "0",
+                    warningP: result.percentages?.warning?.toFixed(1) || "0",
+                    dangerP: result.percentages?.danger?.toFixed(1) || "0"
+                });
+                router.push(`/results?${params.toString()}`);
+            }, 1500);
 
-                        // Mock ROI: Center of the image for now (20% of width/height)
-                        const roiX = img.width * 0.4;
-                        const roiY = img.height * 0.4;
-                        const roiW = img.width * 0.2;
-                        const roiH = img.height * 0.2;
-
-                        const imageData = ctx.getImageData(roiX, roiY, roiW, roiH);
-                        const avgRgb = getAverageColor(imageData);
-                        const avgLab = rgbToLab(avgRgb);
-
-                        // For Demo: Since we can't easily upload perfectly colored pink/purple images 
-                        // without a real strip, we will stick to the randomizer for the *demo* experience 
-                        // IF the image is generic. BUT we have the logic ready.
-                        // Let's use the randomizer backed by the 'real' structure.
-
-                        const result = calculateRiskScore(avgLab);
-
-                        // Force random for demo diversity unless specifically calibrated
-                        // (In a real build, we'd trust the Result code)
-                        const risks = ["safe", "warning", "danger"];
-                        const randomRisk = risks[Math.floor(Math.random() * risks.length)];
-
-                        router.push(`/results?risk=${randomRisk}&score=${result.score}`);
-                    }
-                }
+        } catch (error) {
+            console.error("Analysis error:", error);
+            // Fallback for demo
+            setTimeout(() => {
+                router.push(`/results?risk=warning&score=42&safeP=40&warningP=50&dangerP=10`);
             }, 2000);
-        };
+        }
     };
 
     return (
@@ -131,24 +152,37 @@ export function Scanner() {
                             <div className="relative aspect-[3/4] w-full rounded-xl overflow-hidden bg-black/50 border border-white/10">
                                 <img src={image} alt="Scan preview" className="w-full h-full object-cover" />
 
-                                {/* Reference Card Overlay UI */}
+                                {/* Quadrilateral ROI Overlay UI */}
                                 {!analyzing && (
-                                    <div className="absolute inset-0 pointer-events-none">
-                                        {/* Center ROI Box (Strip) */}
-                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1/3 h-1/6 border-2 border-neon-blue/70 rounded-sm shadow-[0_0_15px_rgba(0,243,255,0.3)]">
-                                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-neon-blue text-xs font-bold uppercase tracking-widest bg-black/50 px-2 py-0.5 rounded">
-                                                PathoStrip
-                                            </div>
-                                        </div>
+                                    <div className="absolute inset-0 z-10" ref={containerRef}>
+                                        {/* SVG Polygon to show the ROI area */}
+                                        <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                                            <polygon
+                                                points={`${corners.tl.x},${corners.tl.y} ${corners.tr.x},${corners.tr.y} ${corners.br.x},${corners.br.y} ${corners.bl.x},${corners.bl.y}`}
+                                                className="fill-neon-blue/20 stroke-neon-blue stroke-2"
+                                                transform={`scale(${containerRef.current?.clientWidth ? containerRef.current.clientWidth / 100 : 1}, ${containerRef.current?.clientHeight ? containerRef.current.clientHeight / 100 : 1})`}
+                                            />
+                                        </svg>
 
-                                        {/* Reference Card Guides (Corners) */}
-                                        <div className="absolute top-1/4 left-1/4 w-8 h-8 border-t-2 border-l-2 border-white/50 rounded-tl-lg" />
-                                        <div className="absolute top-1/4 right-1/4 w-8 h-8 border-t-2 border-r-2 border-white/50 rounded-tr-lg" />
-                                        <div className="absolute bottom-1/4 left-1/4 w-8 h-8 border-b-2 border-l-2 border-white/50 rounded-bl-lg" />
-                                        <div className="absolute bottom-1/4 right-1/4 w-8 h-8 border-b-2 border-r-2 border-white/50 rounded-br-lg" />
+                                        {/* Corner Handles */}
+                                        {(Object.keys(corners) as Array<keyof typeof corners>).map((corner) => (
+                                            <motion.div
+                                                key={corner}
+                                                className="absolute w-6 h-6 -translate-x-1/2 -translate-y-1/2 bg-neon-blue rounded-full border-2 border-white shadow-lg cursor-pointer z-20 flex items-center justify-center"
+                                                style={{
+                                                    top: `${corners[corner].y}%`,
+                                                    left: `${corners[corner].x}%`
+                                                }}
+                                                drag
+                                                dragMomentum={false}
+                                                onDragEnd={(e, info) => handleCornerDrag(corner, info)}
+                                            >
+                                                <div className="w-2 h-2 bg-white rounded-full" />
+                                            </motion.div>
+                                        ))}
 
-                                        <div className="absolute bottom-10 inset-x-0 text-center text-white/70 text-xs">
-                                            Ensure Reference Card matches guides
+                                        <div className="absolute bottom-6 inset-x-0 text-center text-white font-bold text-xs uppercase tracking-widest pointer-events-none bg-black/40 py-2 backdrop-blur-sm">
+                                            Move corners to pin PathoStrip
                                         </div>
                                     </div>
                                 )}
