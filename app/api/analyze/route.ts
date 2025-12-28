@@ -30,10 +30,10 @@ export async function POST(req: NextRequest) {
         // But for PathoStrips, base64 argument should be okay if not exceeding OS limits.
         // If it's too large, we should write to a temp file and pass path.
 
-        return new Promise((resolve) => {
+        return await new Promise<NextResponse>((resolve) => {
             const command = `"${venvPython}" "${scriptPath}" "${base64Data}" ${cornersArg ? `'${cornersArg}'` : ""}`;
 
-            const pythonProcess = exec(command, (error, stdout, stderr) => {
+            exec(command, (error, stdout, stderr) => {
                 if (error) {
                     console.error("Python Error:", stderr);
                     resolve(NextResponse.json({ error: "Failed to run analysis", details: stderr }, { status: 500 }));
